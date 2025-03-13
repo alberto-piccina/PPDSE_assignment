@@ -43,21 +43,3 @@ water_gun = Move(
     accuracy = 1.0,
     pp = 25
 )
-
-a = Move(
-    name = "Water Gun",
-    type = "water",
-    category = "special",
-    power = 40,
-    accuracy = 1.0,
-    pp = 25
-)
-
-b = Move(
-    name = "Water Gun",
-    type = "water",
-    category = "special",
-    power = 40,
-    accuracy = 1.0,
-    pp = 25
-)
