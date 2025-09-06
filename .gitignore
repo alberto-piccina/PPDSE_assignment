@@ -1,0 +1,5 @@
+# Ignore Mac system files
+.DS_Store
+
+# Ignore Python virtual environment
+pkmn_env
