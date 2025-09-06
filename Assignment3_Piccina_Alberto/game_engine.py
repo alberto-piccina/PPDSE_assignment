@@ -4,8 +4,9 @@ import pokemon_trainer
 
 
 # Adding pkmn_list and moves_list from .json's files
-pkmn_list = utils.load_from_file("pokemon_data.json")
-moves_list = utils.load_from_file("moves.json")
+pkmn_list = utils.load_pokemons("pokemons.json")
+moves_list = utils.load_filtered_moves("moves.json")
+type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
 
 class StartGameState(FSM.State):
@@ -14,7 +15,7 @@ class StartGameState(FSM.State):
 
     def run(self, *args, **kargs):
         # List of Starters Pokemon
-        starter_name_list = ["Bulbasaur", "Charmender", "Squirtle"]
+        starter_name_list = ["Bulbasaur", "Charmander", "Squirtle"]
         wild_starter_name_list = ["Caterpie", "Pidgey", "Rattata"]
         
         # Setup the Wild Pokemons

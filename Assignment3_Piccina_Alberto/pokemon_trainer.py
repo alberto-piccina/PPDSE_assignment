@@ -1,6 +1,7 @@
 from collections import Counter as Cnt
 import copy
 import pokemon
+import random
 
 class Trainer:
     def __init__(self, name=""):
@@ -28,6 +29,14 @@ class Trainer:
         count = Cnt(self.items)
         for item, frequency in count.items():
             print(f"-> {item} x{frequency}")
+
+    def _get_valid_moves(self, pokemon_types, moves_list):
+        valid_moves = []
+        for move in moves_list:
+            # The move is valid if its type is in the Pokemon's types or if it's a "normal" type
+            if move["type"] in pokemon_types or move["type"] == "normal":
+                valid_moves.append(move)
+        return valid_moves
             
     # method to add a pokemon in the team
     def add_pokemon(self, list_of_pkmns, list_of_moves, pokemon_name, nickname=""):
@@ -35,30 +44,43 @@ class Trainer:
         if (len(self.pokemon_list) < __max_pokemon):
             pokemon_list = copy.deepcopy(list_of_pkmns)
             moves_list = copy.deepcopy(list_of_moves)
-            result = [pokemon for pokemon in pokemon_list if pokemon["name"] == pokemon_name]
-            empty_pokemon = pokemon.Pokemon()
             
-            if result:
-                index = pokemon_list.index(result[0])
-                empty_pokemon.name = pokemon_list[index]["name"]
-                empty_pokemon.nickname = nickname if nickname != "" else empty_pokemon.name
-                empty_pokemon.national_pokedex_number = pokemon_list[index]["national_pokedex_number"]
-                empty_pokemon.types = pokemon_list[index]["types"]
-                empty_pokemon.baseStats = pokemon_list[index]["baseStats"]
-                empty_pokemon.curr_HP = empty_pokemon.baseStats["hp"]
-                empty_pokemon.moves = pokemon_list[index]["moves"]
+            # Find the Pokemon by name
+            matched_pokemon_data = [p for p in pokemon_list if p["name"] == pokemon_name.lower()]
+            
+            if matched_pokemon_data:
+                pokemon_data = matched_pokemon_data[0]
                 
-                for move_name in empty_pokemon.moves.keys():
-                    matched_move = [move for move in moves_list if move["name"] == move_name]
-                    if matched_move:
-                        empty_pokemon.moves[move_name] = copy.deepcopy(matched_move[0])
-                        empty_pokemon.moves[move_name]["max_pp"] = empty_pokemon.moves[move_name]["pp"]
-                    else:
-                        print(f"Move {move_name} not found!")
+                # Set the level to 1
+                pokemon_data["level"] = 1
                 
+                # Create an empty Pokemon instance
+                empty_pokemon = pokemon.Pokemon(
+                    pokemon_data["name"],
+                    pokemon_data["national_pokedex_number"],
+                    pokemon_data["types"],
+                    pokemon_data["baseStats"])
+                
+                # Assign random moves
+                valid_moves_for_pokemon = self._get_valid_moves(pokemon_data["types"], moves_list)
+                
+                # Each Pokemon must have at least two moves.
+                num_moves_to_assign = min(2, len(valid_moves_for_pokemon))
+                selected_moves_data = random.sample(valid_moves_for_pokemon, num_moves_to_assign)
+
+                for move_data in selected_moves_data:
+                    move_name = move_data["name"]
+                    empty_pokemon.moves[move_name] = copy.deepcopy(move_data)
+                    empty_pokemon.moves[move_name]["max_pp"] = move_data["pp"]
+
+                # Set a nickname if provided, otherwise use the name
+                if nickname:
+                    empty_pokemon.nickname = nickname
+                else:
+                    empty_pokemon.nickname = pokemon_data["name"]
+
                 self.pokemon_list[empty_pokemon.nickname] = empty_pokemon
-                # print(f"{empty_pokemon.nickname} ({empty_pokemon.name}) has been added to {self.name}'s team!")
-                
+                print(f"{empty_pokemon.nickname} ({empty_pokemon.name}) has been added to {self.name}'s team!")
             else:
                 print(f"{pokemon_name} not found.")
         else:
