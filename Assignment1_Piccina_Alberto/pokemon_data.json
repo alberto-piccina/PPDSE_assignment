@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Bulbasaur",
+        "national_pokedex_number": 1,
+        "types": ["grass", "poison"],
+        "baseStats": {
+            "hp": 45,
+            "attack": 49,
+            "defense": 49,
+            "speed": 45,
+            "special": 65
+        },
+        "moves": {
+            "Tackle": {},
+            "Razor Leaf": {} 
+        }
+    },
+    {
+        "name": "Charmender",
+        "national_pokedex_number": 4,
+        "types": ["fire"],
+        "baseStats": {
+            "hp": 39,
+            "attack": 52,
+            "defense": 43,
+            "speed": 65,
+            "special": 50
+        },
+        "moves": {
+            "Tackle": {},
+            "Ember": {}
+        }
+    },
+    {
+        "name": "Squirtle",
+        "national_pokedex_number": 7,
+        "types": ["water"],
+        "baseStats": {
+            "hp": 44,
+            "attack": 48,
+            "defense": 65,
+            "speed": 43,
+            "special": 50
+        },
+        "moves": {
+            "Tackle": {},
+            "Water Gun": {}
+        }
+    }
+]
