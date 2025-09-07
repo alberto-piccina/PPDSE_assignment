@@ -31,7 +31,7 @@ class Pokemon:
                 self.moves.pop(i)
         
     # method to use a certain move
-    def useMove(self, move, other):
+    def useMove(self, move, other, type_effectiveness_list):
         if self.able_to_fight:
             if move["pp"] == 0:
                 print(move["name"], "PP are zero, so", self.name, "can not use this move.")
@@ -62,6 +62,11 @@ class Pokemon:
                         
                         # set effect value, always equal to 1
                         effect = 1
+                        for defend_type in other.types:
+                            for type_effectiveness in type_effectiveness_list:
+                                if type_effectiveness["attack"] == move["type"] and type_effectiveness["defend"] == defend_type:
+                                    effect *= type_effectiveness["effectiveness"]
+                                    break
                         
                         # set critical value
                         if probability < self.baseStats["speed"] / 512:
@@ -79,7 +84,7 @@ class Pokemon:
                         damage = int(math.floor(((2 * self.level + 10) / 250) * (attack / defense) * move["power"] + 2) * modifier)
                         other.curr_HP -= damage
                         
-                        print(move["name"], "hit!", self.nickname, "did", damage, "damages!", 
+                        print(move["name"], "hit!", self.nickname, "did", damage, "damages! (effectiveness:", effect, ")", 
                             other.nickname, "goes from", other.curr_HP + damage, "HP to", other.curr_HP, "HP!\n")
                         
                         if other.curr_HP <= 0:
@@ -94,13 +99,13 @@ class Pokemon:
             print("You can not attack with", self.nickname, "because it is not able to fight.")
                 
     # method to use a random move
-    def useRandomMove(self, other):
+    def useRandomMove(self, other, type_effectiveness_list):
         if other.able_to_fight:
             move = random.choice(list(self.moves.values()))
             if move["pp"] == 0:
                 print(move["name"], "PP are zero, so", self.name, "can not use this move.")
             else:
-                self.useMove(move, other)
+                self.useMove(move, other, type_effectiveness_list)
         else:
             print("You can not attack", other.name, "because it is not able to fight.")
 

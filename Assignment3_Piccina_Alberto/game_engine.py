@@ -202,7 +202,7 @@ class BattleState(FSM.State):
                     print("     -->", i, ":", j["pp"], "PP")
                 move_to_use = input(f'| What {trainer.actual_pokemon.nickname} ({trainer.actual_pokemon.name}) should do? ')
                 
-                trainer.actual_pokemon.useMove(trainer.actual_pokemon.moves[move_to_use], rdn_pkmn)
+                trainer.actual_pokemon.useMove(trainer.actual_pokemon.moves[move_to_use], rdn_pkmn, type_effectiveness_list)
                 if not rdn_pkmn.able_to_fight:
                     print(f"| {rdn_pkmn.nickname} is not able to fight anymore.\n")
                     rdn_pkmn.curr_HP = rdn_pkmn.baseStats["hp"]
@@ -210,7 +210,7 @@ class BattleState(FSM.State):
                     __ongoing = False
                     self.outcome = True
                 else:
-                    rdn_pkmn.useRandomMove(trainer.actual_pokemon)
+                    rdn_pkmn.useRandomMove(trainer.actual_pokemon, type_effectiveness_list)
                 
             elif choice == "Change Pokemon":
                 print("\n| Which Pokemon do you want to use?")
