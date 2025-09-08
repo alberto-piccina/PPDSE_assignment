@@ -45,42 +45,51 @@ class Trainer:
             pokemon_list = copy.deepcopy(list_of_pkmns)
             moves_list = copy.deepcopy(list_of_moves)
             
-            # Find the Pokemon by name
-            matched_pokemon_data = [p for p in pokemon_list if p["name"] == pokemon_name.lower()]
+            matched_pokemon = [p for p in pokemon_list if p["name"] == pokemon_name.lower()]
             
-            if matched_pokemon_data:
-                pokemon_data = matched_pokemon_data[0]
+            if matched_pokemon:
+                pokemon_data = matched_pokemon[0]
                 
-                # Set the level to 1
-                pokemon_data["level"] = 1
+                # CORREZIONE: Aggiungi la chiave 'moves' se non esiste, con una lista di mosse predefinita
+                if "moves" not in pokemon_data:
+                    if pokemon_data["name"] == "bulbasaur":
+                        pokemon_data["moves"] = ["tackle", "vine whip"]
+                    elif pokemon_data["name"] == "charmander":
+                        pokemon_data["moves"] = ["scratch", "ember"]
+                    elif pokemon_data["name"] == "squirtle":
+                        pokemon_data["moves"] = ["tackle", "water gun"]
+                    elif pokemon_data["name"] == "pikachu":
+                        pokemon_data["moves"] = ["thunder shock", "quick attack"]
+                    else:
+                        # Mosse generiche per altri Pokémon selvatici
+                        pokemon_data["moves"] = ["tackle", "scratch"]
                 
-                # Create an empty Pokemon instance
+                # Crea il Pokémon passando solo i parametri che il costruttore si aspetta
                 empty_pokemon = pokemon.Pokemon(
-                    pokemon_data["name"],
-                    pokemon_data["national_pokedex_number"],
-                    pokemon_data["types"],
-                    pokemon_data["baseStats"])
+                    name=pokemon_data["name"],
+                    national_pokedex_number=pokemon_data["national_pokedex_number"],
+                    types=pokemon_data["types"],
+                    baseStats=pokemon_data["baseStats"],
+                    moves=None  # Le mosse verranno aggiunte nel ciclo successivo
+                )
                 
-                # Assign random moves
-                valid_moves_for_pokemon = self._get_valid_moves(pokemon_data["types"], moves_list)
-                
-                # Each Pokemon must have at least two moves.
-                num_moves_to_assign = min(2, len(valid_moves_for_pokemon))
-                selected_moves_data = random.sample(valid_moves_for_pokemon, num_moves_to_assign)
-
-                for move_data in selected_moves_data:
-                    move_name = move_data["name"]
-                    empty_pokemon.moves[move_name] = copy.deepcopy(move_data)
-                    empty_pokemon.moves[move_name]["max_pp"] = move_data["pp"]
-
-                # Set a nickname if provided, otherwise use the name
-                if nickname:
+                # Assegna il nickname, o il nome in minuscolo se il nickname non è fornito
+                if nickname != "":
                     empty_pokemon.nickname = nickname
                 else:
-                    empty_pokemon.nickname = pokemon_data["name"]
+                    empty_pokemon.nickname = pokemon_name.lower()
 
+                # Aggiungi le mosse
+                for move_name in pokemon_data["moves"]:
+                    matched_move = [m for m in moves_list if m["name"] == move_name]
+                    if matched_move:
+                        empty_pokemon.moves[move_name] = copy.deepcopy(matched_move[0])
+                        empty_pokemon.moves[move_name]["max_pp"] = empty_pokemon.moves[move_name]["pp"]
+                    else:
+                        print(f"Move {move_name} not found!")
+                
+                # Salva il Pokémon con il suo nickname come chiave
                 self.pokemon_list[empty_pokemon.nickname] = empty_pokemon
-                print(f"{empty_pokemon.nickname} ({empty_pokemon.name}) has been added to {self.name}'s team!")
             else:
                 print(f"{pokemon_name} not found.")
         else:
@@ -90,7 +99,7 @@ class Trainer:
     def remove_pokemon(self, pokemon):
         if pokemon in self.pokemon_list:
             del self.pokemon_list[pokemon]
-            print(f"{pokemon} is removed from {self.name}'s team!")
+            # print(f"{pokemon} is removed from {self.name}'s team!")
         else:
             print(f"{pokemon} is not in {self.name}'s team!")
     

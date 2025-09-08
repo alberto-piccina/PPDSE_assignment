@@ -1,25 +1,59 @@
-import game_engine
+import random_battle_mode
+import utils
+import pokemon_trainer
+import json
+from tqdm import tqdm
 
 def main():
+    pkmn_list = utils.load_pokemons("pokemons.json")
+    moves_list = utils.load_filtered_moves("moves.json")
+    type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
+
+    starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
+    num_games = 1000
+    num_battles = 200
+
+    all_results = {}
     
-    # Initialize FSM
-    game_engine.game_engine_SM.initialize()
-    
-    # ENGINE
-    exit = False
-    while not exit:
-        game_engine.game_engine_SM.eval_current()
+    wild_pkmn_list = [p for p in pkmn_list if p["name"] not in starters]
+
+    for starter_name in starters:
+        print(f"\nStarting simulation for {starter_name.capitalize()}...")
         
-        target = None
-        if game_engine.game_engine_SM.state not in game_engine.game_engine_SM.final_states:
-            target = game_engine.game_engine_SM.update()
+        all_encountered_pokemons = []
+        all_battle_outcomes = []
+        all_battle_turns = []
+        all_residual_hp_percentage = []
+
+        pbar = tqdm(range(num_games),desc="Game", unit="game")
+
+        for game in pbar:
+            pbar.set_description(f"Game nr.{game+1}")
+            trainer = pokemon_trainer.Trainer(name=f"Player_{starter_name}")
+            trainer.add_pokemon(pkmn_list, moves_list, starter_name)
             
-        if not target:
-            # Exit from simulation
-            exit = True
-        else:
-            game_engine.game_engine_SM.do_transition(target)
-    
+            engine = random_battle_mode.GameEngine(trainer, wild_pkmn_list, moves_list, type_effectiveness_list)
+            
+            simulation_results = engine.run_automated_battles(num_battles)
+
+            all_encountered_pokemons.extend(simulation_results["encountered_pokemons"])
+            all_battle_outcomes.extend(simulation_results["battle_outcomes"])
+            all_battle_turns.extend(simulation_results["battle_turns"])
+            all_residual_hp_percentage.extend(simulation_results["residual_hp_percentage"])
+
+        all_results[starter_name] = {
+            "encountered_pokemons": all_encountered_pokemons,
+            "battle_outcomes": all_battle_outcomes,
+            "battle_turns": all_battle_turns,
+            "residual_hp_percentage": all_residual_hp_percentage,
+            "total_battles_simulated": num_games * num_battles
+        }
+
+        print(f"Simulation completed for {starter_name.capitalize()}.")
+
+    with open("simulation_results.json", "w") as f:
+        json.dump(all_results, f, indent=4)
+        print("\nData saved in simulation_results.json")
 
 if __name__ == "__main__":
     main()

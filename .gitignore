@@ -4,3 +4,6 @@
 # Ignore Python virtual environment
 pkmn_env/
 __pycache__/
+
+# Ignore simulation results
+simulation_results.json
