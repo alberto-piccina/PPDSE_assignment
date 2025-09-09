@@ -5,13 +5,16 @@ import json
 from tqdm import tqdm
 
 def main():
+    
+    file_path = "simulation_results.json"
+    
     pkmn_list = utils.load_pokemons("pokemons.json")
     moves_list = utils.load_filtered_moves("moves.json")
     type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
     starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
-    num_games = 1000
-    num_battles = 200
+    num_games = 3
+    num_battles = 5
 
     all_results = {}
     
@@ -46,7 +49,8 @@ def main():
             "battle_outcomes": all_battle_outcomes,
             "battle_turns": all_battle_turns,
             "residual_hp_percentage": all_residual_hp_percentage,
-            "total_battles_simulated": num_games * num_battles
+            "total_battles_simulated": num_games * num_battles,
+            "battles_per_game": num_battles
         }
 
         print(f"Simulation completed for {starter_name.capitalize()}.")
