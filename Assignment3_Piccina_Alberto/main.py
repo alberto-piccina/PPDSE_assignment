@@ -13,8 +13,8 @@ def main():
     type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
     starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
-    num_games = 3
-    num_battles = 5
+    num_games = 1000
+    num_battles = 200
 
     all_results = {}
     

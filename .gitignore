@@ -7,3 +7,6 @@ __pycache__/
 
 # Ignore simulation results
 simulation_results.json
+
+# Ignore PLOTS directory
+PLOTS/
