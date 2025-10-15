@@ -8,9 +8,9 @@ def main():
     
     file_path = "simulation_results.json"
     
-    pkmn_list = utils.load_pokemons("pokemons.json")
-    moves_list = utils.load_filtered_moves("moves.json")
-    type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
+    pokemons_df = utils.load_pokemons("pokemons.json")
+    moves_df = utils.load_filtered_moves("moves.json")
+    types_df = utils.load_type_effectiveness("type_effectiveness.json")
 
     starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
     num_games = 1000
