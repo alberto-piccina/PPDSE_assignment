@@ -93,11 +93,12 @@ class Pokemon:
         if other.able_to_fight:
             moves = [m for m in self.moves.values() if m["category"] != "status"]
             if not moves:
-                return False, "no_valid_moves"
+                return False, "no_valid_moves", None
             move = random.choice(moves)
-            return self.useMove(move, other, type_effectiveness_list, ignore_pp=ignore_pp)
+            success, result = self.useMove(move, other, type_effectiveness_list, ignore_pp=ignore_pp)
+            return success, result, move
         else:
-            return False, "opponent_fainted"
+            return False, "opponent_fainted", None
 
         
         

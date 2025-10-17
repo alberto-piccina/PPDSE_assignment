@@ -8,13 +8,13 @@ def main():
     
     file_path = "simulation_results.json"
     
-    pokemons_df = utils.load_pokemons("pokemons.json")
-    moves_df = utils.load_filtered_moves("moves.json")
-    types_df = utils.load_type_effectiveness("type_effectiveness.json")
+    pkmn_list = utils.load_pokemons("pokemons.json")
+    moves_list = utils.load_filtered_moves("moves.json")
+    type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
     starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
-    num_games = 1000
-    num_battles = 200
+    num_games = 10
+    num_battles = 5
 
     all_results = {}
     
@@ -27,6 +27,7 @@ def main():
         all_battle_outcomes = []
         all_battle_turns = []
         all_residual_hp_percentage = []
+        all_turns_details = []
 
         pbar = tqdm(range(num_games),desc="Game", unit="game")
 
@@ -43,12 +44,14 @@ def main():
             all_battle_outcomes.extend(simulation_results["battle_outcomes"])
             all_battle_turns.extend(simulation_results["battle_turns"])
             all_residual_hp_percentage.extend(simulation_results["residual_hp_percentage"])
+            all_turns_details.extend(simulation_results.get("turns_details", []))
 
         all_results[starter_name] = {
             "encountered_pokemons": all_encountered_pokemons,
             "battle_outcomes": all_battle_outcomes,
             "battle_turns": all_battle_turns,
             "residual_hp_percentage": all_residual_hp_percentage,
+            "turns_details": all_turns_details,
             "total_battles_simulated": num_games * num_battles,
             "battles_per_game": num_battles
         }

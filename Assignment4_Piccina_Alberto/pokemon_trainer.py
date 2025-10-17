@@ -50,6 +50,7 @@ class Trainer:
             if matched_pokemon:
                 pokemon_data = matched_pokemon[0]
                 
+                # CORREZIONE: Aggiungi la chiave 'moves' se non esiste, con una lista di mosse predefinita
                 if "moves" not in pokemon_data:
                     if pokemon_data["name"] == "bulbasaur":
                         pokemon_data["moves"] = ["tackle", "vine whip"]
@@ -60,21 +61,25 @@ class Trainer:
                     elif pokemon_data["name"] == "pikachu":
                         pokemon_data["moves"] = ["thunder shock", "quick attack"]
                     else:
+                        # Mosse generiche per altri Pokémon selvatici
                         pokemon_data["moves"] = ["tackle", "scratch"]
                 
+                # Crea il Pokémon passando solo i parametri che il costruttore si aspetta
                 empty_pokemon = pokemon.Pokemon(
                     name=pokemon_data["name"],
                     national_pokedex_number=pokemon_data["national_pokedex_number"],
                     types=pokemon_data["types"],
                     baseStats=pokemon_data["baseStats"],
-                    moves=None
+                    moves=None  # Le mosse verranno aggiunte nel ciclo successivo
                 )
                 
+                # Assegna il nickname, o il nome in minuscolo se il nickname non è fornito
                 if nickname != "":
                     empty_pokemon.nickname = nickname
                 else:
                     empty_pokemon.nickname = pokemon_name.lower()
 
+                # Aggiungi le mosse
                 for move_name in pokemon_data["moves"]:
                     matched_move = [m for m in moves_list if m["name"] == move_name]
                     if matched_move:
@@ -83,6 +88,7 @@ class Trainer:
                     else:
                         print(f"Move {move_name} not found!")
                 
+                # Salva il Pokémon con il suo nickname come chiave
                 self.pokemon_list[empty_pokemon.nickname] = empty_pokemon
             else:
                 print(f"{pokemon_name} not found.")

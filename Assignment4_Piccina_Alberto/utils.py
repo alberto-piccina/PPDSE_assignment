@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 
 def load_from_file(filename):
     try:
@@ -25,18 +24,10 @@ def load_filtered_moves(filename):
             # Do not consider 'effect', 'effects', and 'changes' attributes
             move_copy = {key: value for key, value in move.items() if key not in ["effect", "effects", "changes"]}
             filtered_moves.append(move_copy)
-            
-    moves_df = pd.DataFrame(filtered_moves)
-    return moves_df
-
-def load_type_effectiveness(filename):
-    types = load_from_file(filename)
-    types_df = pd.DataFrame(types)
-    return types_df
+    return filtered_moves
 
 def load_pokemons(filename):
     pokemons = load_from_file(filename)
     for pokemon in pokemons:
         pokemon['level'] = 1 # Set default level to 1
-    pokemons_df = pd.DataFrame(pokemons)
-    return pokemons_df
+    return pokemons
