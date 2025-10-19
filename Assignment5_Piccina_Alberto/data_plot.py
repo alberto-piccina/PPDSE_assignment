@@ -4,6 +4,7 @@ import math
 import numpy as np
 import json
 import collections
+import collections
 
 # Plots' Directory
 output_dir = "PLOTS"
@@ -356,58 +357,3 @@ for starter, data in results.items():
     plt.savefig(filepath, dpi=300)
     plt.close(fig)
     print(f"Saved moves pie plot to {filepath}")
-
-
-
-# Pie plot: full encounter distribution with legend on the right
-all_encounters = []
-for starter, info in results.items():
-    all_encounters.extend(info.get("encountered_pokemons", []))
-
-enc_counter = collections.Counter(all_encounters)
-
-if not enc_counter:
-    print("No encounters found — skipping encounter pie chart.")
-else:
-    # Ordina tutti i Pokémon per frequenza
-    sorted_encounters = enc_counter.most_common()
-    labels = [name.capitalize() for name, _ in sorted_encounters]
-    sizes = [count for _, count in sorted_encounters]
-
-    # Pie chart
-    fig, ax = plt.subplots(figsize=(16, 10))
-    wedges, texts, autotexts = ax.pie(
-        sizes,
-        labels=None,
-        autopct='%1.1f%%',
-        startangle=140,
-        pctdistance=0.75,
-        wedgeprops=dict(width=0.5)
-    )
-
-    # Legenda completa a destra
-    legend_labels = [f"{label} ({count})" for label, count in zip(labels, sizes)]
-
-    ax.legend(
-        wedges,
-        legend_labels,
-        title="Encountered Pokémon",
-        loc='center left',
-        bbox_to_anchor=(1.05, 0.5),  # Legenda a destra
-        fontsize=8,
-        title_fontsize=10,
-        ncol=3,  # Colonne nella legenda
-        frameon=False
-    )
-
-    ax.set_title("Distribution of All Encountered Pokémon", fontsize=14)
-    ax.axis('equal')
-
-    filename = "encounter_distribution_pie.png"
-    filepath = os.path.join(output_dir, filename)
-    plt.savefig(filepath, dpi=300, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Saved full encounter distribution pie plot to {filepath}")
-
-
-#  quest'ultimo plot è inutile, partire dal secondo pie plot richiesto e andare avanti da lì
