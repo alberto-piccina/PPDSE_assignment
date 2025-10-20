@@ -4,6 +4,7 @@ import math
 import numpy as np
 import json
 import collections
+from utils import load_pokemons
 
 # Plots' Directory
 output_dir = "PLOTS"
@@ -12,166 +13,6 @@ os.makedirs(output_dir, exist_ok=True)
 with open("simulation_results.json", "r") as f:
     results = json.load(f)
 
-
-
-
-
-
-
-
-
-
-    
-# # First Plot
-# # For each starter pokemon, display in the same graph the cumulative number of  victories 
-# # over the Nbattles battles averaged across the Ngames games
-# print("Plotting 1st graph")
-# plt.figure(figsize=(10, 6))
-
-# for starter, data in results.items():
-#     outcomes = data["battle_outcomes"]
-#     total_battles = data["total_battles_simulated"]
-#     battles_per_game = data["battles_per_game"]
-#     victories = np.array([1 if outcome == "victory" else 0 for outcome in outcomes])
-    
-#     num_games = int(total_battles / battles_per_game)
-    
-#     # Now I have a matrix where each row is a game and each column is a battle
-#     victories_reshaped = victories[:num_games*battles_per_game].reshape(num_games, battles_per_game)
-    
-#     victories_per_game = victories_reshaped.sum(axis=1)
-    
-#     cumulative_victories = np.cumsum(victories_per_game)
-    
-#     plt.plot(range(1, num_games + 1), cumulative_victories, label=starter.capitalize())
-    
-# plt.xlabel("Number of Games")
-# plt.ylabel("Average Cumulative Victories")
-# plt.title("Average Cumulative Victories vs Number of Games")
-# plt.legend()
-# plt.grid(True)
-# filename = "cum_victories_per_game.png"
-# filepath = os.path.join(output_dir, filename)
-# plt.savefig(filepath, dpi=300)
-# plt.close()
-
-
-# # Second Plot
-# # 1. Display the distribution of  the number of  turns in each battle.
-# # 2. Display the distribution of the residual player’s pokemon HPs at the end of each battle.
-# # 3. Compute and show the distributions mean, median, 25th quartile and 75th quartile.
-
-# all_turns = []
-# all_hp = []
-
-# for starter, data in results.items():
-#     all_turns = data["battle_turns"]
-#     all_hp.extend(data["residual_hp_percentage"])
-
-# turns_median = np.median(all_turns)
-# print("Plotting 2nd graph")
-
-# plt.figure(figsize=(8, 6))
-# plt.boxplot(all_turns, vert=False)
-# plt.title("Distribution of the Number of Turns in each battle")
-# plt.xlabel("Number of Turns")
-# plt.text(0.05, 0.95, f"Mean: {np.mean(all_turns):.2f}\nMedian: {turns_median:.2f}\n25° Quartile: {np.percentile(all_turns, 25):.2f}\n75° Quartile: {np.percentile(all_turns, 75):.2f}",
-#             transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
-# filename = "battle_turns_distribution.png"
-# filepath = os.path.join(output_dir, filename)
-# plt.savefig(filepath, dpi=300)
-# plt.close()
-
-# plt.figure(figsize=(8, 6))
-# plt.boxplot(all_hp, vert=False)
-# plt.title("Distribution of the Residual HPs")
-# plt.xlabel("Residual HP's Percentage")
-# plt.text(0.05, 0.95, f"Mean: {np.mean(all_hp):.2f}\nMedian: {np.median(all_hp):.2f}\n25° Quartile: {np.percentile(all_hp, 25):.2f}\n75° Quartile: {np.percentile(all_hp, 75):.2f}",
-#             transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
-# filename = "residual_hp_distribution.png"
-# filepath = os.path.join(output_dir, filename)
-# plt.savefig(filepath, dpi=300)
-# plt.close()
-
-
-# # Bar charts (a graph for each starter pokemon)
-# # 1. For each unique enemy pokemon encountered show the percentage of player’s victories.
-# # 2. For each unique enemy pokemon encountered show the mean and standard deviation of  
-# # the residual player’s pokemon HPs at the end of  each battle in the same graph
-# num_blocks = 8
-# subplots_per_fig = 4
-# print("Plotting 3rd graph")
-# # for each starter
-# for starter, info in results.items():
-#     print(f"    - Plotting for starter: {starter.capitalize()}")
-    
-#     # Collect data
-#     enemies = info["encountered_pokemons"]
-#     outcomes = info["battle_outcomes"]
-#     hp_end = info["residual_hp_percentage"]
-
-#     enemy_stats = {}
-#     for enemy, outcome, hp in zip(enemies, outcomes, hp_end):
-#         win = outcome in [True, "victory", "Victory", "win", "Win"]
-#         if enemy not in enemy_stats:
-#             enemy_stats[enemy] = {"wins": 0, "total": 0, "hp": []}
-#         enemy_stats[enemy]["total"] += 1
-#         if win:
-#             enemy_stats[enemy]["wins"] += 1
-#         enemy_stats[enemy]["hp"].append(hp)
-
-#     enemy_names = sorted(enemy_stats.keys())
-#     win_rates = [enemy_stats[e]["wins"] / enemy_stats[e]["total"] * 100 for e in enemy_names]
-#     hp_means = [np.mean(enemy_stats[e]["hp"]) for e in enemy_names]
-#     hp_stds = [np.std(enemy_stats[e]["hp"]) for e in enemy_names]
-
-#     # Blocks
-#     block_size = math.ceil(len(enemy_names) / num_blocks)
-#     blocks = [enemy_names[i:i + block_size] for i in range(0, len(enemy_names), block_size)]
-
-#     # Number of figures
-#     num_figures = math.ceil(len(blocks) / subplots_per_fig)
-
-#     for fig_idx in range(num_figures):
-#         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-#         axes = axes.flatten()
-        
-#         for subplot_idx in range(subplots_per_fig):
-#             block_idx = fig_idx * subplots_per_fig + subplot_idx
-#             if block_idx >= len(blocks):
-#                 axes[subplot_idx].axis('off')
-#                 continue
-            
-#             block = blocks[block_idx]
-#             x = np.arange(len(block))
-#             block_win_rates = [win_rates[enemy_names.index(e)] for e in block]
-#             block_hp_means = [hp_means[enemy_names.index(e)] for e in block]
-#             block_hp_stds = [hp_stds[enemy_names.index(e)] for e in block]
-
-#             # Win Rate
-#             axes[subplot_idx].bar(x - 0.2, block_win_rates, width=0.4, color='skyblue', edgecolor='black', label='Win Rate [%]')
-#             axes[subplot_idx].set_ylabel('Win Rate [%]', color='blue')
-#             axes[subplot_idx].set_ylim(0, 100)
-
-#             # Res HP
-#             ax2 = axes[subplot_idx].twinx()
-#             ax2.bar(x + 0.2, block_hp_means, width=0.4, yerr=block_hp_stds, color='lightgreen', edgecolor='black', capsize=5, label='Residual HP [%]')
-#             ax2.set_ylim(0, 100)
-#             ax2.set_ylabel('Residual HP [%]', color='green')
-
-#             axes[subplot_idx].set_xticks(x)
-#             axes[subplot_idx].set_xticklabels(block, rotation=90, fontsize=8)
-#             axes[subplot_idx].set_title(f'Enemies {block_idx*block_size +1}-{min((block_idx+1)*block_size,len(enemy_names))}')
-
-#         plt.suptitle(f"{starter.capitalize()} - Battle Stats", fontsize=16)
-#         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-#         plt.grid(True)
-#         filename = f"{starter}_figure{fig_idx+1}.png"
-#         filepath = os.path.join(output_dir, filename)
-#         plt.savefig(filepath, dpi=300)
-#         plt.close(fig)
-        
-print(f"PLOT PROCESS COMPLETED!\nPlots available in directory '{output_dir}'.")
 
 # ==================================================
 # Simple Plot: average (± std) reduction of player's
@@ -409,5 +250,157 @@ else:
     plt.close(fig)
     print(f"Saved full encounter distribution pie plot to {filepath}")
 
-
 #  quest'ultimo plot è inutile, partire dal secondo pie plot richiesto e andare avanti da lì
+
+
+
+# === 1️⃣ Carica i dati ===
+pokemons_data = load_pokemons("pokemons.json")
+
+with open("simulation_results.json", "r") as f:
+    simulation_results = json.load(f)
+
+# === 2️⃣ Distribuzione dei tipi nel dataset completo ===
+all_types = []
+for p in pokemons_data:
+    all_types.extend(p.get("types", []))
+type_counts_all = collections.Counter(all_types)
+
+# === 3️⃣ Distribuzione dei tipi nei Pokémon incontrati ===
+# Mappa nome Pokémon → tipi
+pokemon_type_map = {p["name"].lower(): p.get("types", []) for p in pokemons_data}
+
+# Estrai tutti i Pokémon incontrati dalle simulazioni
+encountered_pokemons = []
+for starter, data in simulation_results.items():
+    encountered_pokemons.extend(data.get("encountered_pokemons", []))
+
+# Conta i tipi dei Pokémon incontrati
+encountered_types = []
+for name in encountered_pokemons:
+    types = pokemon_type_map.get(name.lower(), [])
+    encountered_types.extend(types)
+type_counts_encountered = collections.Counter(encountered_types)
+
+# === 4️⃣ Pie plots affiancati ===
+fig, axs = plt.subplots(1, 2, figsize=(14, 7))
+colors = plt.cm.tab20.colors  # palette di 20 colori diversi
+
+# Pie 1: tipi nel dataset completo
+axs[0].pie(
+    type_counts_all.values(),
+    labels=type_counts_all.keys(),
+    autopct="%1.1f%%",
+    startangle=90,
+    colors=colors[:len(type_counts_all)],
+)
+axs[0].set_title("Pokémon Types in pokemons.json")
+
+# Pie 2: tipi nei Pokémon incontrati
+axs[1].pie(
+    type_counts_encountered.values(),
+    labels=type_counts_encountered.keys(),
+    autopct="%1.1f%%",
+    startangle=90,
+    colors=colors[:len(type_counts_encountered)],
+)
+axs[1].set_title("Pokémon Types Encountered During Games")
+
+plt.suptitle("Comparison of Pokémon Type Distributions", fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+# Salva la figura
+filepath = os.path.join(output_dir, "pokemon_type_distribution_comparison.png")
+plt.savefig(filepath, dpi=300)
+print(f"Saved type distribution comparison plot to {filepath}")
+
+
+
+# Bar Chart: for each starter Pokemon, display the average damage done by the player's pokemon grouped by pokemon level
+for starter, data in results.items():
+    turns_data = data.get("turns_details", [])
+    if not turns_data:
+        continue
+    
+    # Bar Chart: average damage done by the player's pokemon grouped by pokemon level
+    level_damage = defaultdict(list)
+
+    def _parse_level(entry):
+        # Try a few possible keys/structures to find the attacker's level
+        for k in ("attacker_level", "attacker_lv", "level", "attacker_level_before", "attacker_level_after"):
+            v = entry.get(k)
+            if v is not None:
+                try:
+                    return int(float(v))
+                except Exception:
+                    pass
+        # nested structure fallback
+        ap = entry.get("attacker_pokemon") or entry.get("attacker_pkmn") or entry.get("attacker_pokemon_info")
+        if isinstance(ap, dict):
+            for k in ("level", "lvl", "lv"):
+                v = ap.get(k)
+                if v is not None:
+                    try:
+                        return int(float(v))
+                    except Exception:
+                        pass
+        return None
+
+    def _extract_damage(entry):
+        for dk in ("damage", "damage_dealt", "damage_amount", "hp_change"):
+            if dk in entry and entry.get(dk) is not None:
+                try:
+                    return max(0.0, float(entry.get(dk)))
+                except Exception:
+                    pass
+        db = entry.get("defender_hp_before")
+        da = entry.get("defender_hp_after")
+        try:
+            if db is not None and da is not None:
+                return max(0.0, float(db) - float(da))
+        except Exception:
+            pass
+        return 0.0
+
+    for battle in turns_data:
+        if not battle:
+            continue
+        for entry in battle:
+            attacker = (entry.get("attacker") or "").lower()
+            if attacker != starter.lower():
+                continue
+            lvl = _parse_level(entry)
+            if lvl is None:
+                # skip entries without a reliable level
+                continue
+            dmg = _extract_damage(entry)
+            level_damage[lvl].append(dmg)
+
+    if not level_damage:
+        print(f"No damage-by-level data for starter '{starter}' — skipping bar chart.")
+    else:
+        levels = sorted(level_damage.keys())
+        means = np.array([np.mean(level_damage[l]) for l in levels])
+        stds = np.array([np.std(level_damage[l]) for l in levels])
+
+        plt.figure(figsize=(10, 6))
+        x = np.arange(len(levels))
+        bar_colors = plt.cm.tab10.colors
+        plt.bar(x, means, yerr=stds, capsize=5, color=bar_colors[: len(levels)])
+        plt.xticks(x, [str(l) for l in levels])
+        plt.xlabel("Player Pokémon Level")
+        plt.ylabel("Average Damage Done")
+        plt.title(f"{starter.capitalize()} - Average Damage by Level (± std)")
+        plt.grid(axis="y", linestyle="--", alpha=0.6)
+
+        filename = f"{starter}_avg_damage_by_level.png"
+        filepath = os.path.join(output_dir, filename)
+        plt.tight_layout()
+        plt.savefig(filepath, dpi=300)
+        plt.close()
+        print(f"Saved average damage-by-level bar chart to {filepath}")
+
+
+
+
+print(f"PLOT PROCESS COMPLETED!\nPlots available in directory '{output_dir}'.")

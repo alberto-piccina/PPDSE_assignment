@@ -53,10 +53,11 @@ class Trainer:
                 # Ensure the pokemon has a moves list. If the source data doesn't include moves,
                 # pick up to 4 valid moves from moves_list based on the Pokemon types.
                 if "moves" not in pokemon_data or not pokemon_data["moves"]:
-                    # get candidate moves compatible with the Pokemon types
                     candidate_moves = self._get_valid_moves(pokemon_data.get("types", []), moves_list)
-                    # take up to 4 move names
-                    pokemon_move_names = [m["name"] for m in candidate_moves[:4]]
+                    # take up the first 4 moves
+                    # pokemon_move_names = [m["name"] for m in candidate_moves[:4]]
+                    # take up 4 random moves
+                    pokemon_move_names = [m["name"] for m in random.sample(candidate_moves, min(4, len(candidate_moves)))]
                 else:
                     pokemon_move_names = pokemon_data["moves"]
                     
