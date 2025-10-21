@@ -10,6 +10,7 @@ class GameEngine:
 
     def run_automated_battles(self, num_battles):
         statistics = {
+            "player_pokemon": [],
             "encountered_pokemons": [],
             "battle_outcomes": [], 
             "battle_turns": [],
@@ -18,6 +19,14 @@ class GameEngine:
         }
 
         player_pkmn = list(self.trainer.pokemon_list.values())[0]
+        
+        statistics["player_pokemon"] = {
+            "name": player_pkmn.name,
+            "level": player_pkmn.level,
+            "types": player_pkmn.types,
+            "actStats": player_pkmn.actStats
+        }
+        
         wild_trainer = pokemon_trainer.Trainer(name="Wild Trainer")
 
         for i in range(num_battles):
@@ -25,7 +34,12 @@ class GameEngine:
             wild_trainer.add_pokemon(self.pkmn_list, self.moves_list, wild_pokemon_name)
             wild_pkmn = list(wild_trainer.pokemon_list.values())[0]
 
-            statistics["encountered_pokemons"].append(wild_pkmn.name)
+            statistics["encountered_pokemons"].append({
+                "name": wild_pkmn.name,
+                "level": wild_pkmn.level,
+                "types": wild_pkmn.types,
+                "actStats": wild_pkmn.actStats
+            })
             
             battle_turns = 0
             current_battle_turns = []

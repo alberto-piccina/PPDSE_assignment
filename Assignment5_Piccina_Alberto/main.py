@@ -3,6 +3,7 @@ import utils
 import pokemon_trainer
 import json
 from tqdm import tqdm
+import random
 
 def main():
     
@@ -12,15 +13,19 @@ def main():
     moves_list = utils.load_filtered_moves("moves.json")
     type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
-    starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
-    num_games = 1000
-    num_battles = 200
+    # starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
+    starters = [p["name"] for p in pkmn_list]
+    num_games = 10
+    num_battles = 5
 
     all_results = {}
     
-    wild_pkmn_list = [p for p in pkmn_list if p["name"] not in starters]
-
-    for starter_name in starters:
+    # wild_pkmn_list = [p for p in pkmn_list if p["name"] not in starters]
+    wild_pkmn_list = [p for p in pkmn_list]
+    
+    starter = random.sample([p["name"] for p in pkmn_list],num_games)
+    
+    for starter_name in starter:
         print(f"\nStarting simulation for {starter_name.capitalize()}...")
         
         all_encountered_pokemons = []
