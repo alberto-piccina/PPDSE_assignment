@@ -6,7 +6,7 @@ pkmn_env/
 __pycache__/
 
 # Ignore simulation results
-simulation_results.json
+simulation_results*.json
 
 # Ignore PLOTS directory
 PLOTS/
@@ -16,3 +16,5 @@ battle_prediction_results.png
 battles_dataframe.csv
 predictions_results.csv
 probability_analysis.png
+*.png
+*.csv

@@ -7,10 +7,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (classification_report, confusion_matrix, 
                             roc_curve, auc, accuracy_score, precision_recall_curve)
-import warnings
-warnings.filterwarnings('ignore')
 
-# Carica il dataset
+# Load dataset
 df = pd.read_csv("battles_dataframe.csv")
 
 print("="*80)
@@ -21,10 +19,7 @@ print(f"Total battles: {len(df)}")
 print(f"\nOutcome distribution:\n{df['outcome'].value_counts()}")
 
 # Preprocessing
-# Converti i tipi in categorici (encoding)
 le_type = LabelEncoder()
-
-# Combina tutti i tipi per un encoding consistente
 all_types = pd.concat([
     df['player_type1'], 
     df['player_type2'].dropna(),
@@ -34,7 +29,7 @@ all_types = pd.concat([
 
 le_type.fit(all_types)
 
-# Encoding dei tipi
+# Types Encoding
 df['player_type1_encoded'] = le_type.transform(df['player_type1'])
 df['player_type2_encoded'] = df['player_type2'].apply(
     lambda x: le_type.transform([x])[0] if pd.notna(x) else -1
@@ -44,7 +39,7 @@ df['opponent_type2_encoded'] = df['opponent_type2'].apply(
     lambda x: le_type.transform([x])[0] if pd.notna(x) else -1
 )
 
-# Target: 1 se victory, 0 se loss
+# Target: 1 = victory, 0 = loss
 df['win'] = (df['outcome'] == 'victory').astype(int)
 
 # Features selection
@@ -71,14 +66,14 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"\nTrain set size: {len(X_train)}")
 print(f"Test set size: {len(X_test)}")
 
-# Training del modello
+# Training
 print("\n" + "="*80)
 print("TRAINING RANDOM FOREST CLASSIFIER")
 print("="*80)
 
 model = RandomForestClassifier(
-    n_estimators=100,
-    max_depth=10,
+    n_estimators=150,
+    max_depth=20,
     min_samples_split=5,
     min_samples_leaf=2,
     random_state=42,
@@ -87,11 +82,11 @@ model = RandomForestClassifier(
 
 model.fit(X_train, y_train)
 
-# Predizioni
+# Predictions
 y_pred = model.predict(X_test)
 y_pred_proba = model.predict_proba(X_test)[:, 1]
 
-# Metriche
+# Metrics
 accuracy = accuracy_score(y_test, y_pred)
 print(f"\nTest Accuracy: {accuracy:.4f}")
 
@@ -107,53 +102,63 @@ feature_importance = pd.DataFrame({
 print("\nTop 10 Most Important Features:")
 print(feature_importance.head(10).to_string(index=False))
 
-# Visualizzazioni
-fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 
 # 1. Confusion Matrix
+plt.figure(figsize=(6, 5))
 cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0, 0])
-axes[0, 0].set_title('Confusion Matrix', fontsize=14, fontweight='bold')
-axes[0, 0].set_xlabel('Predicted')
-axes[0, 0].set_ylabel('Actual')
-axes[0, 0].set_xticklabels(['Loss', 'Victory'])
-axes[0, 0].set_yticklabels(['Loss', 'Victory'])
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title('Confusion Matrix', fontsize=14, fontweight='bold')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.xticks(ticks=[0.5, 1.5], labels=['Loss', 'Victory'])
+plt.yticks(ticks=[0.5, 1.5], labels=['Loss', 'Victory'], rotation=0)
+plt.tight_layout()
+plt.savefig('plot_confusion_matrix.png', dpi=300)
+print("✓ Saved: plot_confusion_matrix.png")
+plt.show()
 
 # 2. ROC Curve
+plt.figure(figsize=(6, 5))
 fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
 roc_auc = auc(fpr, tpr)
-
-axes[0, 1].plot(fpr, tpr, color='darkorange', lw=2, 
-                label=f'ROC curve (AUC = {roc_auc:.3f})')
-axes[0, 1].plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random')
-axes[0, 1].set_xlim([0.0, 1.0])
-axes[0, 1].set_ylim([0.0, 1.05])
-axes[0, 1].set_xlabel('False Positive Rate')
-axes[0, 1].set_ylabel('True Positive Rate')
-axes[0, 1].set_title('ROC Curve', fontsize=14, fontweight='bold')
-axes[0, 1].legend(loc="lower right")
-axes[0, 1].grid(alpha=0.3)
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve', fontsize=14, fontweight='bold')
+plt.legend(loc="lower right")
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig('plot_roc_curve.png', dpi=300)
+print("✓ Saved: plot_roc_curve.png")
+plt.show()
 
 # 3. Feature Importance (Top 10)
+plt.figure(figsize=(7, 6))
 top_features = feature_importance.head(10)
-axes[1, 0].barh(top_features['feature'], top_features['importance'], color='steelblue')
-axes[1, 0].set_xlabel('Importance')
-axes[1, 0].set_title('Top 10 Feature Importance', fontsize=14, fontweight='bold')
-axes[1, 0].invert_yaxis()
-axes[1, 0].grid(axis='x', alpha=0.3)
+plt.barh(top_features['feature'], top_features['importance'], color='steelblue')
+plt.xlabel('Importance')
+plt.title('Top 10 Feature Importance', fontsize=14, fontweight='bold')
+plt.gca().invert_yaxis()
+plt.grid(axis='x', alpha=0.3)
+plt.tight_layout()
+plt.savefig('plot_feature_importance.png', dpi=300)
+print("✓ Saved: plot_feature_importance.png")
+plt.show()
 
 # 4. Precision-Recall Curve
+plt.figure(figsize=(6, 5))
 precision, recall, _ = precision_recall_curve(y_test, y_pred_proba)
-axes[1, 1].plot(recall, precision, color='green', lw=2)
-axes[1, 1].set_xlabel('Recall')
-axes[1, 1].set_ylabel('Precision')
-axes[1, 1].set_title('Precision-Recall Curve', fontsize=14, fontweight='bold')
-axes[1, 1].grid(alpha=0.3)
-
+plt.plot(recall, precision, color='green', lw=2)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve', fontsize=14, fontweight='bold')
+plt.grid(alpha=0.3)
 plt.tight_layout()
-plt.savefig('battle_prediction_results.png', dpi=300, bbox_inches='tight')
-print("\n✓ Plots saved as 'battle_prediction_results.png'")
+plt.savefig('plot_precision_recall.png', dpi=300)
+print("✓ Saved: plot_precision_recall.png")
 plt.show()
+
 
 # Analisi aggiuntiva: Probabilità di vittoria per diversi range
 print("\n" + "="*80)
@@ -165,22 +170,24 @@ df_test['actual_win'] = y_test.values
 df_test['predicted_win'] = y_pred
 df_test['win_probability'] = y_pred_proba
 
-# Distribuzione delle probabilità
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
 # Histogram delle probabilità predette
-axes[0].hist(df_test[df_test['actual_win']==1]['win_probability'], 
-             bins=20, alpha=0.6, label='Actual Wins', color='green')
-axes[0].hist(df_test[df_test['actual_win']==0]['win_probability'], 
-             bins=20, alpha=0.6, label='Actual Losses', color='red')
-axes[0].set_xlabel('Predicted Win Probability')
-axes[0].set_ylabel('Frequency')
-axes[0].set_title('Distribution of Predicted Win Probabilities', 
-                  fontsize=12, fontweight='bold')
-axes[0].legend()
-axes[0].grid(alpha=0.3)
+plt.figure(figsize=(7, 5))
+plt.hist(df_test[df_test['actual_win']==1]['win_probability'], 
+         bins=20, alpha=0.6, label='Actual Wins', color='green')
+plt.hist(df_test[df_test['actual_win']==0]['win_probability'], 
+         bins=20, alpha=0.6, label='Actual Losses', color='red')
+plt.xlabel('Predicted Win Probability')
+plt.ylabel('Frequency')
+plt.title('Distribution of Predicted Win Probabilities', fontsize=12, fontweight='bold')
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig('plot_probability_distribution.png', dpi=300)
+print("✓ Saved: plot_probability_distribution.png")
+plt.show()
 
 # Calibration plot
+plt.figure(figsize=(7, 5))
 prob_bins = np.linspace(0, 1, 11)
 bin_centers = (prob_bins[:-1] + prob_bins[1:]) / 2
 true_probs = []
@@ -193,29 +200,20 @@ for i in range(len(prob_bins)-1):
     else:
         true_probs.append(np.nan)
 
-axes[1].plot([0, 1], [0, 1], 'k--', label='Perfect Calibration')
-axes[1].plot(bin_centers, true_probs, 'o-', label='Model', color='blue', markersize=8)
-axes[1].set_xlabel('Predicted Probability')
-axes[1].set_ylabel('Actual Probability')
-axes[1].set_title('Calibration Plot', fontsize=12, fontweight='bold')
-axes[1].legend()
-axes[1].grid(alpha=0.3)
-
+plt.plot([0, 1], [0, 1], 'k--', label='Perfect Calibration')
+plt.plot(bin_centers, true_probs, 'o-', label='Model', color='blue', markersize=8)
+plt.xlabel('Predicted Probability')
+plt.ylabel('Actual Probability')
+plt.title('Calibration Plot', fontsize=12, fontweight='bold')
+plt.legend()
+plt.grid(alpha=0.3)
 plt.tight_layout()
-plt.savefig('probability_analysis.png', dpi=300, bbox_inches='tight')
-print("✓ Plots saved as 'probability_analysis.png'")
+plt.savefig('plot_calibration.png', dpi=300)
+print("✓ Saved: plot_calibration.png")
 plt.show()
 
-# Salva il modello e alcuni esempi di predizione
-print("\n" + "="*80)
-print("SAMPLE PREDICTIONS")
-print("="*80)
 
-sample_predictions = df_test.head(10)[['win_probability', 'predicted_win', 'actual_win']]
-sample_predictions.columns = ['Win Probability', 'Predicted', 'Actual']
-print(sample_predictions.to_string())
-
-# Salva risultati in CSV
+# Save results to CSV
 results_df = df_test[['win_probability', 'predicted_win', 'actual_win']]
 results_df.to_csv('predictions_results.csv', index=False)
 print("\n✓ Predictions saved to 'predictions_results.csv'")

@@ -4,6 +4,7 @@ import pokemon_trainer
 import json
 from tqdm import tqdm
 import random
+import pandas as pd
 
 def main():
     
@@ -13,59 +14,111 @@ def main():
     moves_list = utils.load_filtered_moves("moves.json")
     type_effectiveness_list = utils.load_from_file("type_effectiveness.json")
 
-    # starters = ["bulbasaur", "charmander", "squirtle", "pikachu"]
-    starters = [p["name"] for p in pkmn_list]
-    num_games = 10
-    num_battles = 5
+    num_games = 1000
+    num_battles = 500
 
-    all_results = {}
-    
-    # wild_pkmn_list = [p for p in pkmn_list if p["name"] not in starters]
-    wild_pkmn_list = [p for p in pkmn_list]
-    
-    starter = random.sample([p["name"] for p in pkmn_list],num_games)
-    
-    for starter_name in starter:
-        print(f"\nStarting simulation for {starter_name.capitalize()}...")
-        
-        all_encountered_pokemons = []
-        all_battle_outcomes = []
-        all_battle_turns = []
-        all_residual_hp_percentage = []
-        all_turns_details = []
-
-        pbar = tqdm(range(num_games),desc="Game", unit="game")
-
-        for game in pbar:
-            pbar.set_description(f"Game nr.{game+1}")
-            trainer = pokemon_trainer.Trainer(name=f"Player_{starter_name}")
-            trainer.add_pokemon(pkmn_list, moves_list, starter_name)
-            
-            engine = random_battle_mode.GameEngine(trainer, wild_pkmn_list, moves_list, type_effectiveness_list)
-            
-            simulation_results = engine.run_automated_battles(num_battles)
-
-            all_encountered_pokemons.extend(simulation_results["encountered_pokemons"])
-            all_battle_outcomes.extend(simulation_results["battle_outcomes"])
-            all_battle_turns.extend(simulation_results["battle_turns"])
-            all_residual_hp_percentage.extend(simulation_results["residual_hp_percentage"])
-            all_turns_details.extend(simulation_results.get("turns_details", []))
-
-        all_results[starter_name] = {
-            "encountered_pokemons": all_encountered_pokemons,
-            "battle_outcomes": all_battle_outcomes,
-            "battle_turns": all_battle_turns,
-            "residual_hp_percentage": all_residual_hp_percentage,
-            "turns_details": all_turns_details,
-            "total_battles_simulated": num_games * num_battles,
-            "battles_per_game": num_battles
+    all_results = {
+        "games": [],
+        "summary": {
+            "num_games": num_games,
+            "battles_per_game": num_battles,
+            "total_battles": num_games * num_battles
         }
+    }
+    
+    wild_pkmn_list = [p for p in pkmn_list]
+    starters_used = []
+    
+    # Lista per raccogliere i dati del DataFrame
+    battles_data = []
+    
+    print(f"\nStarting simulation for {num_games} games -> RANDOM STARTERS MODE")
 
-        print(f"Simulation completed for {starter_name.capitalize()}.")
+    pbar = tqdm(range(num_games), desc="Game", unit="game")
 
+    for game in pbar:
+        # Scegli uno starter casuale per questo game
+        starter_name = random.choice([p["name"] for p in pkmn_list])
+        starters_used.append(starter_name)
+        
+        pbar.set_description(f"Game {game+1} - Starter: {starter_name}")
+        
+        trainer = pokemon_trainer.Trainer(name=f"Player_Game{game+1}")
+        trainer.add_pokemon(pkmn_list, moves_list, starter_name)
+        
+        engine = random_battle_mode.GameEngine(trainer, wild_pkmn_list, moves_list, type_effectiveness_list)
+        
+        simulation_results = engine.run_automated_battles(num_battles)
+
+        # Salva i risultati di questo game specifico
+        game_data = {
+            "game_number": game + 1,
+            "starter": starter_name,
+            "player_pokemon": simulation_results["player_pokemon"],
+            "encountered_pokemons": simulation_results["encountered_pokemons"],
+            "battle_outcomes": simulation_results["battle_outcomes"],
+            "battle_turns": simulation_results["battle_turns"],
+            "residual_hp_percentage": simulation_results["residual_hp_percentage"],
+            "turns_details": simulation_results.get("turns_details", []),
+            "num_battles": num_battles
+        }
+        
+        all_results["games"].append(game_data)
+        
+        # Prepara i dati per il DataFrame
+        player_pkmn = simulation_results["player_pokemon"]
+        
+        for battle_idx in range(num_battles):
+            opponent_pkmn = simulation_results["encountered_pokemons"][battle_idx]
+            
+            battle_row = {
+                "game_number": game + 1,
+                "battle_number": battle_idx + 1,
+                
+                # Player Pokemon features
+                "player_name": player_pkmn["name"],
+                "player_type1": player_pkmn["types"][0] if len(player_pkmn["types"]) > 0 else None,
+                "player_type2": player_pkmn["types"][1] if len(player_pkmn["types"]) > 1 else None,
+                "player_hp": player_pkmn["actStats"]["hp"],
+                "player_attack": player_pkmn["actStats"]["attack"],
+                "player_defense": player_pkmn["actStats"]["defense"],
+                "player_special": player_pkmn["actStats"]["special"],
+                "player_speed": player_pkmn["actStats"]["speed"],
+                
+                # Opponent Pokemon features
+                "opponent_name": opponent_pkmn["name"],
+                "opponent_type1": opponent_pkmn["types"][0] if len(opponent_pkmn["types"]) > 0 else None,
+                "opponent_type2": opponent_pkmn["types"][1] if len(opponent_pkmn["types"]) > 1 else None,
+                "opponent_hp": opponent_pkmn["actStats"]["hp"],
+                "opponent_attack": opponent_pkmn["actStats"]["attack"],
+                "opponent_defense": opponent_pkmn["actStats"]["defense"],
+                "opponent_special": opponent_pkmn["actStats"]["special"],
+                "opponent_speed": opponent_pkmn["actStats"]["speed"],
+                
+                # Battle outcome
+                "outcome": simulation_results["battle_outcomes"][battle_idx],
+                "turns": simulation_results["battle_turns"][battle_idx],
+                "residual_hp_percentage": simulation_results["residual_hp_percentage"][battle_idx]
+            }
+            
+            battles_data.append(battle_row)
+
+    print(f"\nSimulation completed.")
+    print(f"\nStarters used in the games:")
+    for i, starter in enumerate(starters_used, 1):
+        print(f"  Game {i}: {starter.capitalize()}")
+
+    # Salva il JSON
     with open("simulation_results.json", "w") as f:
         json.dump(all_results, f, indent=4)
         print("\nData saved in simulation_results.json")
+    
+    # Crea e salva il DataFrame
+    df = pd.DataFrame(battles_data)
+    df.to_csv("battles_dataframe.csv", index=False)
+    print(f"DataFrame saved in battles_dataframe.csv with {len(df)} battles")
+    print(f"\nDataFrame shape: {df.shape}")
+    print(f"Columns: {list(df.columns)}")
 
 if __name__ == "__main__":
     main()
