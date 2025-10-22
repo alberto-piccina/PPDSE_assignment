@@ -14,10 +14,7 @@ with open("simulation_results.json", "r") as f:
     results = json.load(f)
 
 
-# ==================================================
-# Simple Plot: average (± std) reduction of player's
-# Pokemon HP percentage along battle turns
-# ==================================================
+# Simple Plot: display the average HP reduction per turn (mean ± std) for each starter Pokémon
 print("\nPlotting HP reduction per turn (mean ± std) for each starter...")
 plt.figure(figsize=(10, 6))
 
@@ -30,7 +27,7 @@ for idx, (starter, data) in enumerate(results.items()):
 
     # Reconstruct per-battle reduction sequences (in percent)
     per_battle_reductions = []
-    player_nick = starter  # trainer.add_pokemon sets nickname to pokemon_name.lower()
+    player_nick = starter
 
     for battle in turns_data:
         if not battle:
@@ -141,7 +138,7 @@ for starter, data in results.items():
             if not move:
                 move = "UNKNOWN"
 
-            # extract damage (prefer explicit fields, otherwise compute from hp before/after)
+            # extract damage
             damage = None
             for dk in ("damage", "damage_dealt", "damage_amount", "hp_change"):
                 if dk in entry and entry.get(dk) is not None:
@@ -169,7 +166,7 @@ for starter, data in results.items():
     if not move_counts:
         continue
 
-    # Order moves consistently (by usage desc)
+    # Order moves
     moves = [m for m, _ in move_counts.most_common()]
     counts = np.array([move_counts[m] for m in moves], dtype=float)
     damages = np.array([move_damage[m] for m in moves], dtype=float)
@@ -210,7 +207,7 @@ enc_counter = collections.Counter(all_encounters)
 if not enc_counter:
     print("No encounters found — skipping encounter pie chart.")
 else:
-    # Ordina tutti i Pokémon per frequenza
+    # Sort all Pokémon by frequency
     sorted_encounters = enc_counter.most_common()
     labels = [name.capitalize() for name, _ in sorted_encounters]
     sizes = [count for _, count in sorted_encounters]
@@ -226,7 +223,7 @@ else:
         wedgeprops=dict(width=0.5)
     )
 
-    # Legenda completa a destra
+    # Complete legend on the right
     legend_labels = [f"{label} ({count})" for label, count in zip(labels, sizes)]
 
     ax.legend(
@@ -234,10 +231,10 @@ else:
         legend_labels,
         title="Encountered Pokémon",
         loc='center left',
-        bbox_to_anchor=(1.05, 0.5),  # Legenda a destra
+        bbox_to_anchor=(1.05, 0.5),  # Legend on the right
         fontsize=8,
         title_fontsize=10,
-        ncol=3,  # Colonne nella legenda
+        ncol=3,  # Columns in the legend
         frameon=False
     )
 
@@ -250,43 +247,42 @@ else:
     plt.close(fig)
     print(f"Saved full encounter distribution pie plot to {filepath}")
 
-#  quest'ultimo plot è inutile, partire dal secondo pie plot richiesto e andare avanti da lì
+#  THE ABOVE PLOT WAS NOT REQUIRED, SO IT CAN BE REMOVED IF NEEDED
 
 
 
-# === 1️⃣ Carica i dati ===
+# Pie plot: display in the same figure the distribution of pokemon types in the pokemons.json file and the distribution of pokemon types in the list of pokemons encountered during the games
 pokemons_data = load_pokemons("pokemons.json")
 
 with open("simulation_results.json", "r") as f:
     simulation_results = json.load(f)
 
-# === 2️⃣ Distribuzione dei tipi nel dataset completo ===
+# Count types in the full pokemons.json dataset
 all_types = []
 for p in pokemons_data:
     all_types.extend(p.get("types", []))
 type_counts_all = collections.Counter(all_types)
 
-# === 3️⃣ Distribuzione dei tipi nei Pokémon incontrati ===
-# Mappa nome Pokémon → tipi
+# Map from Pokemon name to its types
 pokemon_type_map = {p["name"].lower(): p.get("types", []) for p in pokemons_data}
 
-# Estrai tutti i Pokémon incontrati dalle simulazioni
+# Extract all encountered Pokémon from simulation results
 encountered_pokemons = []
 for starter, data in simulation_results.items():
     encountered_pokemons.extend(data.get("encountered_pokemons", []))
 
-# Conta i tipi dei Pokémon incontrati
+# Count types of encountered Pokémon
 encountered_types = []
 for name in encountered_pokemons:
     types = pokemon_type_map.get(name.lower(), [])
     encountered_types.extend(types)
 type_counts_encountered = collections.Counter(encountered_types)
 
-# === 4️⃣ Pie plots affiancati ===
+# Plots
 fig, axs = plt.subplots(1, 2, figsize=(14, 7))
-colors = plt.cm.tab20.colors  # palette di 20 colori diversi
+colors = plt.cm.tab20.colors  # 20 colors
 
-# Pie 1: tipi nel dataset completo
+# Pie 1
 axs[0].pie(
     type_counts_all.values(),
     labels=type_counts_all.keys(),
@@ -296,7 +292,7 @@ axs[0].pie(
 )
 axs[0].set_title("Pokémon Types in pokemons.json")
 
-# Pie 2: tipi nei Pokémon incontrati
+# Pie 2
 axs[1].pie(
     type_counts_encountered.values(),
     labels=type_counts_encountered.keys(),
@@ -309,7 +305,7 @@ axs[1].set_title("Pokémon Types Encountered During Games")
 plt.suptitle("Comparison of Pokémon Type Distributions", fontsize=16)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-# Salva la figura
+# Save the figure
 filepath = os.path.join(output_dir, "pokemon_type_distribution_comparison.png")
 plt.savefig(filepath, dpi=300)
 print(f"Saved type distribution comparison plot to {filepath}")

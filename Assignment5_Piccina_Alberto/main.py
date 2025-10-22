@@ -29,7 +29,7 @@ def main():
     wild_pkmn_list = [p for p in pkmn_list]
     starters_used = []
     
-    # Lista per raccogliere i dati del DataFrame
+    # List to hold all battle data for DataFrame
     battles_data = []
     
     print(f"\nStarting simulation for {num_games} games -> RANDOM STARTERS MODE")
@@ -37,7 +37,7 @@ def main():
     pbar = tqdm(range(num_games), desc="Game", unit="game")
 
     for game in pbar:
-        # Scegli uno starter casuale per questo game
+        # Choose a random starter for this game
         starter_name = random.choice([p["name"] for p in pkmn_list])
         starters_used.append(starter_name)
         
@@ -50,7 +50,7 @@ def main():
         
         simulation_results = engine.run_automated_battles(num_battles)
 
-        # Salva i risultati di questo game specifico
+        # Save the results of this specific game
         game_data = {
             "game_number": game + 1,
             "starter": starter_name,
@@ -65,7 +65,6 @@ def main():
         
         all_results["games"].append(game_data)
         
-        # Prepara i dati per il DataFrame
         player_pkmn = simulation_results["player_pokemon"]
         
         for battle_idx in range(num_battles):
@@ -108,12 +107,12 @@ def main():
     for i, starter in enumerate(starters_used, 1):
         print(f"  Game {i}: {starter.capitalize()}")
 
-    # Salva il JSON
+    # Save the JSON
     with open("simulation_results.json", "w") as f:
         json.dump(all_results, f, indent=4)
         print("\nData saved in simulation_results.json")
     
-    # Crea e salva il DataFrame
+    # Create DataFrame and save to CSV
     df = pd.DataFrame(battles_data)
     df.to_csv("battles_dataframe.csv", index=False)
     print(f"DataFrame saved in battles_dataframe.csv with {len(df)} battles")

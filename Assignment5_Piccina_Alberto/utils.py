@@ -18,12 +18,18 @@ def load_from_file(filename):
 def load_filtered_moves(filename):
     moves = load_from_file(filename)
     filtered_moves = []
+
     for move in moves:
-        # Filter only moves that have a 'power' attribute
+        if any(value is None for value in move.values()):
+            continue
+
         if move.get('power') is not None:
-            # Do not consider 'effect', 'effects', and 'changes' attributes
-            move_copy = {key: value for key, value in move.items() if key not in ["effect", "effects", "changes"]}
+            move_copy = {
+                key: value for key, value in move.items()
+                if key not in ["effect", "effects", "changes"]
+            }
             filtered_moves.append(move_copy)
+
     return filtered_moves
 
 def load_pokemons(filename):

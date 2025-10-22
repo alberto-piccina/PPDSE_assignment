@@ -50,7 +50,6 @@ class Trainer:
             if matched_pokemon:
                 pokemon_data = matched_pokemon[0]
                 
-                # Ensure the pokemon has a moves list. If the source data doesn't include moves,
                 # pick up to 4 valid moves from moves_list based on the Pokemon types.
                 if "moves" not in pokemon_data or not pokemon_data["moves"]:
                     candidate_moves = self._get_valid_moves(pokemon_data.get("types", []), moves_list)

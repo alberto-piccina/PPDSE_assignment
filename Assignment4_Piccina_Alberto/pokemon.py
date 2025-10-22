@@ -66,7 +66,6 @@ class Pokemon:
                         
                         stability = 1.5 if move["type"] in self.types else 1
                         
-                        # Calcola l'effetto in base ai tipi
                         effect = 1.0
                         for defend_type in other.types:
                             for type_effect in type_effectiveness_list:

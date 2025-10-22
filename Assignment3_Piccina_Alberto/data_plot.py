@@ -90,7 +90,7 @@ plt.close()
 num_blocks = 8
 subplots_per_fig = 4
 print("Plotting 3rd graph")
-# for each starter
+
 for starter, info in results.items():
     print(f"    - Plotting for starter: {starter.capitalize()}")
     

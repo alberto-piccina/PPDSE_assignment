@@ -170,7 +170,7 @@ df_test['actual_win'] = y_test.values
 df_test['predicted_win'] = y_pred
 df_test['win_probability'] = y_pred_proba
 
-# Histogram delle probabilità predette
+# Histogram
 plt.figure(figsize=(7, 5))
 plt.hist(df_test[df_test['actual_win']==1]['win_probability'], 
          bins=20, alpha=0.6, label='Actual Wins', color='green')
